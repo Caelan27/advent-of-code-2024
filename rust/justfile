@@ -5,7 +5,7 @@ lint day:
 test part +FLAGS='-p day-01':
     cargo nextest run {{FLAGS}} {{part}}
 bench-all:
-    cargo bench > benchmarks/benchmarks.txt
+    cargo bench -q > benchmarks/benchmarks.txt
 bench day part:
     cargo bench --bench {{day}} {{part}} >> benchmarks/{{day}}.bench.txt
 flamegraph day part:
