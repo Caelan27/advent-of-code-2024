@@ -7,7 +7,6 @@ enum Direction {
 #[derive(Debug)]
 struct Report {
     levels: Vec<i32>,
-    direction: Direction,
 }
 
 fn to_report(line: &str) -> Report {
@@ -15,13 +14,8 @@ fn to_report(line: &str) -> Report {
         .split_whitespace()
         .map(|x| x.parse().unwrap())
         .collect();
-    let direction = if levels[0] < levels[1] {
-        Direction::Ascending
-    } else {
-        Direction::Descending
-    };
 
-    Report { levels, direction }
+    Report { levels }
 }
 
 impl Report {
@@ -32,10 +26,12 @@ impl Report {
             levels.remove(index);
         };
 
+        let direction = update_direction(&levels);
+
         let mut last = levels[0];
 
         for &current in levels.iter().skip(1) {
-            match self.direction {
+            match direction {
                 Direction::Descending => {
                     if last <= current || current < last - 3 {
                         return false;
@@ -65,6 +61,14 @@ impl Report {
         }
 
         false
+    }
+}
+
+fn update_direction(levels: &Vec<i32>) -> Direction {
+    if levels[0] < levels[1] {
+        Direction::Ascending
+    } else {
+        Direction::Descending
     }
 }
 
