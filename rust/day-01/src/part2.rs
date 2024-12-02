@@ -1,18 +1,20 @@
 use std::collections::HashMap;
 #[tracing::instrument]
 pub fn process(input: &str) -> String {
-    let (mut list1, mut list2): (Vec<u32>, Vec<u32>) = input
+    let (left_value, right_value): (Vec<u32>, Vec<u32>) = input
         .lines()
         .map(|line| {
-            let mut lists = line.split_whitespace().map(|x| x.parse::<u32>().unwrap());
-            (lists.next().unwrap(), lists.next().unwrap())
+            let mut lists = line
+                .split_whitespace()
+                .map(|x| x.parse::<u32>().expect("Should be a number"));
+            (
+                lists.next().expect("Should have a left value"),
+                lists.next().expect("Should have a right value"),
+            )
         })
         .unzip();
 
-    list1.sort();
-    list2.sort();
-
-    let count_map = list2
+    let count_map = right_value
         .iter()
         .copied()
         .fold(HashMap::new(), |mut map, number| {
@@ -20,7 +22,7 @@ pub fn process(input: &str) -> String {
             map
         });
 
-    let total: u32 = list1
+    let total: u32 = left_value
         .iter()
         .map(|&left| left * count_map.get(&left).unwrap_or(&0))
         .sum();
