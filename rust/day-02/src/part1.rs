@@ -7,44 +7,28 @@ enum Direction {
 #[derive(Debug)]
 struct Report {
     levels: Vec<i32>,
-    direction: Direction,
-}
-
-fn to_report(line: &str) -> Report {
-    let levels: Vec<i32> = line
-        .split_whitespace()
-        .map(|x| x.parse().unwrap())
-        .collect();
-    let direction = if levels[0] < levels[1] {
-        Direction::Ascending
-    } else {
-        Direction::Descending
-    };
-
-    Report { levels, direction }
 }
 
 impl Report {
-    fn is_safe(&self) -> bool {
-        let mut last = self.levels[0];
-
-        for &current in self.levels.iter().skip(1) {
-            match self.direction {
-                Direction::Descending => {
-                    if last <= current || current < last - 3 {
-                        return false;
-                    }
-                }
-
-                Direction::Ascending => {
-                    if last >= current || current > last + 3 {
-                        return false;
-                    }
-                }
-            }
-            last = current;
+    fn direction(&self) -> Direction {
+        if self.levels[0] < self.levels[1] {
+            Direction::Ascending
+        } else {
+            Direction::Descending
         }
-        true
+    }
+    fn is_safe(&self) -> bool {
+        let direction = self.direction();
+        match direction {
+            Direction::Ascending => self
+                .levels
+                .windows(2)
+                .all(|window| window[0] < window[1] && window[1] <= window[0] + 3),
+            Direction::Descending => self
+                .levels
+                .windows(2)
+                .all(|window| window[0] > window[1] && window[1] >= window[0] - 3),
+        }
     }
 }
 
@@ -57,6 +41,15 @@ pub fn process(input: &str) -> String {
         safe_reports += is_safe as i32;
     }
     safe_reports.to_string()
+}
+
+fn to_report(line: &str) -> Report {
+    let levels: Vec<i32> = line
+        .split_whitespace()
+        .map(|x| x.parse().expect("Should be a number"))
+        .collect();
+
+    Report { levels }
 }
 
 #[cfg(test)]

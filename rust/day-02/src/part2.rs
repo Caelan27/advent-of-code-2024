@@ -9,15 +9,6 @@ struct Report {
     levels: Vec<i32>,
 }
 
-fn to_report(line: &str) -> Report {
-    let levels: Vec<i32> = line
-        .split_whitespace()
-        .map(|x| x.parse().unwrap())
-        .collect();
-
-    Report { levels }
-}
-
 impl Report {
     fn check_safe_remove(&self, remove_index: Option<usize>) -> bool {
         let mut levels = self.levels.clone();
@@ -28,25 +19,15 @@ impl Report {
 
         let direction = update_direction(&levels);
 
-        let mut last = levels[0];
+        match direction {
+            Direction::Ascending => levels
+                .windows(2)
+                .all(|window| window[0] < window[1] && window[1] <= window[0] + 3),
 
-        for &current in levels.iter().skip(1) {
-            match direction {
-                Direction::Descending => {
-                    if last <= current || current < last - 3 {
-                        return false;
-                    }
-                }
-
-                Direction::Ascending => {
-                    if last >= current || current > last + 3 {
-                        return false;
-                    }
-                }
-            }
-            last = current;
+            Direction::Descending => levels
+                .windows(2)
+                .all(|window| window[0] > window[1] && window[1] >= window[0] - 3),
         }
-        true
     }
 
     fn is_safe(&self) -> bool {
@@ -64,7 +45,7 @@ impl Report {
     }
 }
 
-fn update_direction(levels: &Vec<i32>) -> Direction {
+fn update_direction(levels: &[i32]) -> Direction {
     if levels[0] < levels[1] {
         Direction::Ascending
     } else {
@@ -84,6 +65,15 @@ pub fn process(input: &str) -> String {
     }
 
     safe_reports.to_string()
+}
+
+fn to_report(line: &str) -> Report {
+    let levels: Vec<i32> = line
+        .split_whitespace()
+        .map(|x| x.parse().expect("Should be a number"))
+        .collect();
+
+    Report { levels }
 }
 
 #[cfg(test)]
