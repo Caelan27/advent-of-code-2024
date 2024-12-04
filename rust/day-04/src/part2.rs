@@ -1,38 +1,14 @@
-use std::collections::HashMap;
 fn centre_of_cross(grid: &[Vec<char>], x: usize, y: usize) -> bool {
-    let neighbors = [
-        (-1, -1), // Top-left
-        (1, 1),   // Bottom-right
-        (-1, 1),  // Top-right
-        (1, -1),  // Bottom-left
-    ];
-    let mut mapped_neighbors: HashMap<(i32, i32), char> = HashMap::new();
-
-    for neighbor in neighbors {
-        let new_x = x as i32 + neighbor.0;
-        let new_y = y as i32 + neighbor.1;
-        if let Some(row) = grid.get(new_y as usize) {
-            if let Some(&ch) = row.get(new_x as usize) {
-                mapped_neighbors.insert(neighbor, ch);
-            }
-        }
-    }
-
-    if mapped_neighbors.len() != 4 {
-        return false;
-    } else {
-        let &top_left = mapped_neighbors.get(&(-1, -1)).unwrap();
-        let &bottom_right = mapped_neighbors.get(&(1, 1)).unwrap();
-        let &top_right = mapped_neighbors.get(&(-1, 1)).unwrap();
-        let &bottom_left = mapped_neighbors.get(&(1, -1)).unwrap();
-        if (bottom_left == 'S' && top_right == 'M' || bottom_left == 'M' && top_right == 'S')
+    if y > 0 && y < grid.len() - 1 && x > 0 && x < grid[y].len() - 1 {
+        let &top_left = grid.get(y - 1).and_then(|row| row.get(x - 1)).unwrap();
+        let &top_right = grid.get(y - 1).and_then(|row| row.get(x + 1)).unwrap();
+        let &bottom_left = grid.get(y + 1).and_then(|row| row.get(x - 1)).unwrap();
+        let &bottom_right = grid.get(y + 1).and_then(|row| row.get(x + 1)).unwrap();
+        (bottom_left == 'S' && top_right == 'M' || bottom_left == 'M' && top_right == 'S')
             && (top_left == 'M' && bottom_right == 'S' || top_left == 'S' && bottom_right == 'M')
-        {
-            return true;
-        }
+    } else {
+        false
     }
-
-    false
 }
 
 #[tracing::instrument]
