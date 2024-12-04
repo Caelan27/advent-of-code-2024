@@ -12,9 +12,9 @@ pub fn process(input: &str) -> String {
     let re = Regex::new(r"mul\((\d{1,3}),(\d{1,3})\)|do\(\)|don't\(\)").unwrap();
 
     let regexed = re.captures_iter(input).filter_map(|caps| {
-        if caps.get(1).is_some() {
-            let first = caps.get(1).unwrap().as_str().parse().unwrap();
-            let second = caps.get(2).unwrap().as_str().parse().unwrap();
+        if let (Some(first), Some(second)) = (caps.get(1), caps.get(2)) {
+            let first = first.as_str().parse::<u32>().ok()?;
+            let second = second.as_str().parse::<u32>().ok()?;
             Some(MatchResult::Mul(first, second))
         } else if caps.get(0)?.as_str() == "do()" {
             Some(MatchResult::Do)
