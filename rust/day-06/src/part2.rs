@@ -21,6 +21,67 @@ enum MoveGuardResult {
     Looped,
 }
 
+fn num_loops(
+    grid: &Vec<Vec<PositionType>>,
+    (initial_guard_x, initial_guard_y): (usize, usize),
+) -> u32 {
+    let mut temp_grid = grid.clone();
+    let mut guard_positions = HashSet::new();
+
+    let mut guard_x = initial_guard_x;
+    let mut guard_y = initial_guard_y;
+
+    loop {
+        (guard_x, guard_y) =
+            match move_guard(&mut temp_grid, (guard_x, guard_y), &mut guard_positions) {
+                MoveGuardResult::Moved((x, y)) => (x, y),
+                MoveGuardResult::Ended => {
+                    break;
+                }
+                MoveGuardResult::Looped => {
+                    break;
+                }
+            };
+    }
+
+    let mut loop_count = 0;
+    let mut visited_positions = HashSet::new();
+    for (x, y, _direction) in guard_positions.into_iter() {
+        visited_positions.insert((x, y));
+    }
+    for (x, y) in visited_positions.into_iter() {
+        if (x, y) == (initial_guard_x, initial_guard_y) {
+            continue;
+        }
+        let (mut guard_x, mut guard_y) = (initial_guard_x, initial_guard_y);
+        let mut temp_grid = grid.clone();
+
+        let mut temp_guard_positions = HashSet::new();
+        temp_guard_positions.insert((initial_guard_x, initial_guard_y, Direction::Up));
+
+        temp_grid[y][x] = PositionType::Obstruction;
+
+        loop {
+            (guard_x, guard_y) = match move_guard(
+                &mut temp_grid,
+                (guard_x, guard_y),
+                &mut temp_guard_positions,
+            ) {
+                MoveGuardResult::Moved((x, y)) => (x, y),
+                MoveGuardResult::Ended => {
+                    break;
+                }
+                MoveGuardResult::Looped => {
+                    loop_count += 1;
+                    break;
+                }
+            };
+        }
+    }
+
+    loop_count
+}
+
 fn move_guard(
     grid: &mut [Vec<PositionType>],
     (initial_guard_x, initial_guard_y): (usize, usize),
@@ -43,6 +104,7 @@ fn move_guard(
                 guard_positions.insert((guard_x, guard_y, Direction::Up));
             }
         }
+
         PositionType::Guard(Direction::Right) => {
             while guard_x != columns - 1 && grid[guard_y][guard_x + 1] != PositionType::Obstruction
             {
@@ -53,6 +115,7 @@ fn move_guard(
                 guard_positions.insert((guard_x, guard_y, Direction::Right));
             }
         }
+
         PositionType::Guard(Direction::Down) => {
             while guard_y != rows - 1 && grid[guard_y + 1][guard_x] != PositionType::Obstruction {
                 guard_y += 1;
@@ -62,6 +125,7 @@ fn move_guard(
                 guard_positions.insert((guard_x, guard_y, Direction::Down));
             }
         }
+
         PositionType::Guard(Direction::Left) => {
             while guard_x != 0 && grid[guard_y][guard_x - 1] != PositionType::Obstruction {
                 guard_x -= 1;
@@ -113,7 +177,6 @@ pub fn process(input: &str) -> String {
         .collect();
 
     let mut initial_guard_pos = (0, 0);
-    let mut empty_positions = Vec::new();
 
     for (y, row) in grid.iter().enumerate() {
         for (x, cell) in row.iter().enumerate() {
@@ -124,55 +187,7 @@ pub fn process(input: &str) -> String {
         }
     }
 
-    let mut visited_positions = HashSet::new();
-    let (mut guard_x, mut guard_y) = initial_guard_pos;
-    let mut first_grid = grid.clone();
-
-    loop {
-        (guard_x, guard_y) =
-            match move_guard(&mut first_grid, (guard_x, guard_y), &mut visited_positions) {
-                MoveGuardResult::Moved((x, y)) => (x, y),
-                MoveGuardResult::Looped => break,
-                MoveGuardResult::Ended => break,
-            };
-    }
-
-    let (initial_guard_x, initial_guard_y) = initial_guard_pos;
-
-    let initial_direction = match &grid[initial_guard_y][initial_guard_x] {
-        PositionType::Guard(direction) => direction,
-        _ => panic!("unexpected position type"),
-    };
-
-    for (x, y, _direction) in visited_positions {
-        empty_positions.push((x, y));
-    }
-
-    let mut num_loops = 0;
-    for (x, y) in empty_positions {
-        let mut temp_grid: Vec<Vec<PositionType>> = grid.clone();
-        temp_grid[y][x] = PositionType::Obstruction;
-
-        let mut guard_positions = HashSet::new();
-        guard_positions.insert((initial_guard_x, initial_guard_y, initial_direction.clone()));
-
-        let mut guard_x = initial_guard_x;
-        let mut guard_y = initial_guard_y;
-
-        loop {
-            (guard_x, guard_y) =
-                match move_guard(&mut temp_grid, (guard_x, guard_y), &mut guard_positions) {
-                    MoveGuardResult::Moved((x, y)) => (x, y),
-                    MoveGuardResult::Ended => {
-                        break;
-                    }
-                    MoveGuardResult::Looped => {
-                        num_loops += 1;
-                        break;
-                    }
-                };
-        }
-    }
+    let num_loops = num_loops(&grid, initial_guard_pos);
 
     num_loops.to_string()
 }
