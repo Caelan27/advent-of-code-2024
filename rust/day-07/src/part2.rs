@@ -13,11 +13,14 @@ enum Operator {
 
 fn check_equation(equation: &Equation) -> bool {
     let num_operators = equation.numbers.len() as u32 - 1;
+    // There are 3^n combinations of operators, since each operator can be one ternary digit
     let total_combinations = 3_u32.pow(num_operators);
 
     for combination in 0..total_combinations {
         let mut operators = Vec::new();
         for shift in 0..num_operators {
+            // Dividing by 3^shift is basically a ternary bit shift
+            // Taking the modulo 3 gives us the value of the last ternary digit
             let operator = match (combination / 3_u32.pow(shift)) % 3 {
                 0 => Operator::Add,
                 1 => Operator::Multiply,
@@ -68,7 +71,6 @@ pub fn process(input: &str) -> String {
 
     let mut total = 0;
     for equation in equations.iter() {
-        dbg!(equation);
         if check_equation(equation) {
             total += equation.value;
         }

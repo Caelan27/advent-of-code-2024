@@ -11,9 +11,14 @@ enum Operator {
 }
 
 fn check_equation(equation: &Equation) -> bool {
+    // Sets the number of operators to be used in the equation
     let num_operators = equation.numbers.len() as u32 - 1;
+
+    // There are 2^n combinations of operators, since each operator can be one binary digit
     for combination in 0..2_u32.pow(num_operators) {
+        // Initialise an empty vector to store the operators
         let mut operators = Vec::new();
+        // For each operator, check what the operator should be
         for shift in 0..num_operators {
             if combination & (1 << shift) != 0 {
                 operators.push(Operator::Multiply)
@@ -22,10 +27,12 @@ fn check_equation(equation: &Equation) -> bool {
             }
         }
 
+        // If the calculated value is equal to the expected value, return true
         if calculate(equation, &operators) == equation.value {
             return true;
         }
     }
+    // If no combination of operators results in the expected value, return false
     false
 }
 
@@ -42,6 +49,7 @@ fn calculate(equation: &Equation, operators: &[Operator]) -> u64 {
 
 #[tracing::instrument]
 pub fn process(input: &str) -> String {
+    // Parse the equations from the input
     let equations = input
         .lines()
         .map(|line| {
@@ -58,6 +66,8 @@ pub fn process(input: &str) -> String {
         .collect::<Vec<_>>();
 
     let mut total = 0;
+
+    // For each equation that's valid, add the value to the total
     for equation in equations.iter() {
         if check_equation(equation) {
             total += equation.value;
