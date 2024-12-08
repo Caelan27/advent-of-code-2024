@@ -1,2 +1,3 @@
 rust/day-*/input.txt
 rust/target/*
+rust/benchmarks/*
