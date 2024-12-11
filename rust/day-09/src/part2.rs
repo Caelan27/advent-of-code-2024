@@ -13,12 +13,6 @@ struct Space {
     offset: usize,
 }
 
-#[derive(Debug, Clone, PartialEq)]
-enum Block {
-    File(File),
-    Fpace(Space),
-}
-
 fn parse(input: &str) -> (Vec<File>, Vec<Space>) {
     let mut id = 0;
     let mut offset = 0;
@@ -54,7 +48,9 @@ pub fn process(input: &str) -> String {
 
     for file in files.iter_mut().rev() {
         for space in spaces.iter_mut() {
-            if space.size >= file.size {
+            if space.offset > file.offset {
+                continue;
+            } else if space.size >= file.size {
                 file.offset = space.offset;
                 space.size -= file.size;
                 space.offset += file.size;
@@ -62,6 +58,7 @@ pub fn process(input: &str) -> String {
                 if space.size == 0 {
                     spaces.retain(|s| s.size > 0);
                 }
+
                 break;
             }
         }
