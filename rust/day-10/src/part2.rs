@@ -1,5 +1,3 @@
-use std::collections::HashSet;
-
 fn parse(input: &str) -> Vec<Vec<u8>> {
     input
         .lines()
@@ -96,7 +94,6 @@ pub fn process(input: &str) -> String {
             }
         }
     }
-    dbg!(&total);
 
     total.to_string()
 }

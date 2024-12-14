@@ -96,7 +96,6 @@ pub fn process(input: &str) -> String {
             }
         }
     }
-    dbg!(&total);
 
     total.to_string()
 }
